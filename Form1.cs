@@ -76,6 +76,8 @@ namespace ApacheWindowsDeploy
             }
 
 
+            string EOL = "\r\n";
+
             log("Creating directories");
             Directory.CreateDirectory(tbApachePath.Text + @"\vhosts");
             DirectoryInfo apacheExtraPath = Directory.CreateDirectory(tbApachePath.Text + @"\extra");
@@ -87,28 +89,31 @@ namespace ApacheWindowsDeploy
             if (!File.Exists(apacheExtraPath.FullName + @"\libssh2.dll"))
                 File.Copy(@"extra\libssh2.dll", apacheExtraPath.FullName + @"\libssh2.dll");
             if (!File.Exists(apacheExtraPath.FullName + @"\ssleay32.dll"))
-                File.Copy(@"extra\ssleay32.dll", apacheExtraPath.FullName + @"\ssleay32.dll");
+                File.Copy(@"extra\ssleay32.dll", apacheExtraPath.FullName + @"\ssleay32.dll");        
 
-            @File.Copy(@"extra\php.ini", apacheExtraPath.FullName + @"\php.ini", true);
-
-            @File.Copy(@"extra\cacert.pem", apacheExtraPath.FullName + @"\cacert.pem", true);
-            
+            @File.Copy(@"extra\cacert.pem", apacheExtraPath.FullName + @"\cacert.pem", true);            
 
             string conf_path = tbApachePath.Text + @"\conf\httpd-apms.conf";
 
             log("add directive path to httpd conf file");
-            string cont = "Define PHPBIN \""+ tbPhpPath.Text.Replace("\\","/")  + "/php7apache2_4.dll" + "\"" + "\r\n" ;
-            cont += "Define PHPINI \"" + apacheExtraPath.FullName.Replace("\\", "/") + "/\"" + "\r\n";
-            cont += "Define EXTRA \"" + apacheExtraPath.FullName.Replace("\\", "/")  + "/\"" + "\r\n";
-
+            string cont = "Define PHPBIN \""+ tbPhpPath.Text.Replace("\\","/")  + "/php7apache2_4.dll" + "\"" + EOL;
+            cont += "Define PHPINI \"" + apacheExtraPath.FullName.Replace("\\", "/") + "/\"" + EOL;
+            cont += "Define EXTRA \"" + apacheExtraPath.FullName.Replace("\\", "/")  + "/\"" + EOL;
 
             File.WriteAllText(conf_path, cont + File.ReadAllText(@"extra\httpd.conf"));
+
+            log("add directive to php.ini file");
+            string phpcont = "[PHP]" + EOL;
+            phpcont += "error_log=\"" + tbApachePath.Text + "\\logs\\php-error.log\"" + EOL;
+            phpcont += "extension_dir=\"" + tbPhpPath.Text + "\\ext\\\"" + EOL;
             
+            File.WriteAllText(apacheExtraPath.FullName + @"\php.ini" , phpcont + File.ReadAllText(@"extra\php.ini"));
 
             log("install service " + tbInstanceName.Text);
             cmd( tbApachePath.Text + "\\bin\\httpd -k install -n \"" + tbInstanceName.Text + "\" -f  conf/httpd-apms.conf");
-            log("start service " + tbInstanceName.Text);
-            cmd("sc start " + tbInstanceName.Text);
+
+            //log("start service " + tbInstanceName.Text);
+            //cmd("sc start " + tbInstanceName.Text);
         }
 
         private void cmd(string commande)

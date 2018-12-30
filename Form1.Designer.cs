@@ -145,7 +145,7 @@
             this.Controls.Add(this.btnBrowseApache);
             this.Controls.Add(this.tbApachePath);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Install Apache Server";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
